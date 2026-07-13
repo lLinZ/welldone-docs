@@ -4,6 +4,7 @@ import type { DrylogData } from '../lib/drylog-types'
 import { docFileName, docStatus, expedienteZipName, type DocStates } from '../lib/paquete'
 import { buildDocOutput } from '../lib/build-doc'
 import { generateDrylogPdf } from '../lib/drylog-pdf'
+import { mergePdfs } from '../lib/pdf-merge'
 import { downloadZip, zipStore, type ZipEntry } from '../lib/zip'
 
 interface Props {
@@ -28,8 +29,10 @@ export default function PaqueteTab({ exp, docStates, drylogClosing }: Props) {
       const files: ZipEntry[] = []
       for (const d of docs) {
         if (d.id === 'drylog') {
-          files.push({ name: docFileName('Dry Log inicial', exp), data: await buildDocOutput(docStates.drylog) })
-          files.push({ name: docFileName('Dry Log closing', exp), data: await generateDrylogPdf(drylogClosing!) })
+          // El drylog es un solo documento: firmado inicial + closing generado, unidos.
+          const initial = await buildDocOutput(docStates.drylog)
+          const closing = await generateDrylogPdf(drylogClosing!)
+          files.push({ name: docFileName('Dry Log', exp), data: await mergePdfs([initial, closing]) })
         } else {
           files.push({ name: docFileName(d.name, exp), data: await buildDocOutput(docStates[d.id]) })
         }
