@@ -20,6 +20,8 @@ export interface DrylogSeed {
   dateOfCommencement: string
   readingDate: string
   firstLabel: string // "Initial" o "Closing"
+  service?: string // tipo de pérdida (para el nombre del archivo)
+  docLabel?: string // prefijo del nombre (ej. "Dry Log closing")
 }
 
 export default function DrylogTab({ seed, onData }: { seed?: DrylogSeed; onData?: (d: DrylogData) => void }) {
@@ -63,8 +65,9 @@ export default function DrylogTab({ seed, onData }: { seed?: DrylogSeed; onData?
     setMsg(null)
     try {
       const bytes = await generateDrylogPdf(data)
-      const name = data.insuredName ? data.insuredName.replace(/\s+/g, ' ').trim() : 'drylog'
-      downloadPdf(bytes, `Drylog ${name}.pdf`)
+      const parts = [seed?.docLabel ?? 'Dry Log', data.insuredName.trim(), seed?.service ?? '']
+      const name = parts.filter((s) => s !== '').join(' ').replace(/[/\\:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim()
+      downloadPdf(bytes, `${name || 'Dry Log'}.pdf`)
       setMsg({ text: 'Dry Log generado y descargado' })
     } catch (e) {
       console.error(e)

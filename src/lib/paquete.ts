@@ -1,9 +1,22 @@
 // Estado de completitud de cada documento del expediente y del paquete completo.
-import { activeDocs, type DocDef, type DocId, type Expediente } from './expediente'
+import { activeDocs, lossTypeDef, type DocDef, type DocId, type Expediente } from './expediente'
 import type { DocEditorState } from './doc-stamp'
 import type { DrylogData } from './drylog-types'
+import { safeName } from './zip'
 
 export type DocStates = Record<DocId, DocEditorState>
+
+/** Nombre de archivo: "Documento Cliente Servicio.pdf" (ej. "DTP Jose Linares Roof.pdf"). */
+export function docFileName(docName: string, exp: Expediente): string {
+  const parts = [docName, exp.clientName.trim(), lossTypeDef(exp).label].filter((s) => s !== '')
+  return `${safeName(parts.join(' '))}.pdf`
+}
+
+/** Nombre del ZIP del expediente: "Expediente Cliente Servicio.zip". */
+export function expedienteZipName(exp: Expediente): string {
+  const parts = ['Expediente', exp.clientName.trim(), lossTypeDef(exp).label].filter((s) => s !== '')
+  return `${safeName(parts.join(' '))}.zip`
+}
 
 export interface DocStatus {
   ok: boolean

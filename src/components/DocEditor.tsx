@@ -11,6 +11,7 @@ import {
   type StampItem,
 } from '../lib/doc-stamp'
 import { buildDocOutput } from '../lib/build-doc'
+import { docFileName } from '../lib/paquete'
 
 export type { DocEditorState }
 export { emptyDocState }
@@ -235,8 +236,7 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
     setMsg(null)
     try {
       const out = await buildDocOutput(state)
-      const cli = exp.clientName ? ` ${exp.clientName}`.replace(/\s+/g, ' ').trimEnd() : ''
-      downloadBytes(out, `${def.name}${cli}.pdf`)
+      downloadBytes(out, docFileName(def.name, exp))
       setMsg({ text: state.flatten ? 'Documento aplanado y descargado' : 'Documento descargado' })
     } catch (e) {
       console.error(e)

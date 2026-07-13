@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { activeDocs, type Expediente } from '../lib/expediente'
 import type { DrylogData } from '../lib/drylog-types'
-import { docStatus, type DocStates } from '../lib/paquete'
+import { docFileName, docStatus, expedienteZipName, type DocStates } from '../lib/paquete'
 import { buildDocOutput } from '../lib/build-doc'
 import { generateDrylogPdf } from '../lib/drylog-pdf'
-import { downloadZip, safeName, zipStore, type ZipEntry } from '../lib/zip'
+import { downloadZip, zipStore, type ZipEntry } from '../lib/zip'
 
 interface Props {
   exp: Expediente
@@ -25,17 +25,16 @@ export default function PaqueteTab({ exp, docStates, drylogClosing }: Props) {
     setBusy(true)
     setMsg(null)
     try {
-      const cli = exp.clientName ? ` ${safeName(exp.clientName)}` : ''
       const files: ZipEntry[] = []
       for (const d of docs) {
         if (d.id === 'drylog') {
-          files.push({ name: `Dry Log inicial${cli}.pdf`, data: await buildDocOutput(docStates.drylog) })
-          files.push({ name: `Dry Log closing${cli}.pdf`, data: await generateDrylogPdf(drylogClosing!) })
+          files.push({ name: docFileName('Dry Log inicial', exp), data: await buildDocOutput(docStates.drylog) })
+          files.push({ name: docFileName('Dry Log closing', exp), data: await generateDrylogPdf(drylogClosing!) })
         } else {
-          files.push({ name: `${d.name}${cli}.pdf`, data: await buildDocOutput(docStates[d.id]) })
+          files.push({ name: docFileName(d.name, exp), data: await buildDocOutput(docStates[d.id]) })
         }
       }
-      downloadZip(zipStore(files), `Expediente${cli || ' cliente'}.zip`)
+      downloadZip(zipStore(files), expedienteZipName(exp))
       setMsg({ text: `Paquete descargado (${files.length} documentos).` })
     } catch (e) {
       console.error(e)

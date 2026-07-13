@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { DocDef, Expediente } from '../lib/expediente'
+import { lossTypeDef, type DocDef, type Expediente } from '../lib/expediente'
 import type { DrylogData } from '../lib/drylog-types'
 import DocEditor, { type DocEditorState } from './DocEditor'
 import DrylogTab from './DrylogTab'
@@ -49,6 +49,8 @@ export default function DrylogSlot({ def, exp, state, onChange, onClosingData }:
             dateOfCommencement: exp.openDate,
             readingDate: exp.closeDate,
             firstLabel: 'Closing',
+            service: lossTypeDef(exp).label,
+            docLabel: 'Dry Log closing',
           }}
         />
       </div>
