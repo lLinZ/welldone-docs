@@ -840,7 +840,8 @@ button {
 
 .ov.erase {
   background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(209, 85, 75, 0.5);
+  outline: 1px dashed rgba(56, 63, 107, 0.45);
+  outline-offset: -1px;
   pointer-events: auto;
   cursor: move;
 }
