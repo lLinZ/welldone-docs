@@ -182,6 +182,13 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
     setPageIdx(it.page)
   }
 
+  const duplicateItem = (it: StampItem) => {
+    const id = nextId()
+    const copy: StampItem = { ...it, id, x: it.x + 12, top: it.top + 12 }
+    setItems([...items, copy])
+    setSelected(id)
+  }
+
   // ---- Arrastrar / redimensionar ----
   const startDrag = (id: number, e: React.PointerEvent) => {
     e.preventDefault()
@@ -511,6 +518,9 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
               </label>
             </>
           )}
+          <button className="bar-btn dup" onClick={() => duplicateItem(selItem)}>
+            Duplicar
+          </button>
           <button
             className="bar-btn del"
             onClick={() => {

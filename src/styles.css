@@ -984,6 +984,15 @@ button {
   white-space: nowrap;
 }
 
+.sel-bar .bar-btn.dup {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.sel-bar .bar-btn.dup:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
 .sel-bar .bar-btn.del {
   background: rgba(255, 255, 255, 0.14);
   color: #ffd7d2;
