@@ -4,12 +4,16 @@ import type { DocDef, Expediente } from '../lib/expediente'
 import { commonFields } from '../lib/expediente'
 import {
   downloadBytes,
+  emptyDocState,
   newEraseItem,
   newTextItem,
-  stampPdf,
+  type DocEditorState,
   type StampItem,
 } from '../lib/doc-stamp'
-import { flattenPdf } from '../lib/flatten'
+import { buildDocOutput } from '../lib/build-doc'
+
+export type { DocEditorState }
+export { emptyDocState }
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -17,17 +21,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 ).toString()
 
 const RENDER_SCALE = 2
-
-export interface DocEditorState {
-  fileName: string
-  bytes: Uint8Array | null
-  items: StampItem[]
-  flatten: boolean
-}
-
-export function emptyDocState(): DocEditorState {
-  return { fileName: '', bytes: null, items: [], flatten: false }
-}
 
 type Armed = { type: 'field' | 'free' | 'erase'; text: string } | null
 
@@ -241,8 +234,7 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
     setBusy(true)
     setMsg(null)
     try {
-      const source = state.flatten ? await flattenPdf(bytes.slice()) : bytes.slice()
-      const out = await stampPdf(source, items)
+      const out = await buildDocOutput(state)
       const cli = exp.clientName ? ` ${exp.clientName}`.replace(/\s+/g, ' ').trimEnd() : ''
       downloadBytes(out, `${def.name}${cli}.pdf`)
       setMsg({ text: state.flatten ? 'Documento aplanado y descargado' : 'Documento descargado' })

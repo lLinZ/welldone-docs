@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { activeDocs, emptyExpediente, type DocId, type Expediente } from './lib/expediente'
 import { autoPlaceFor, hasAutoPlace } from './lib/doc-maps'
+import { packageReady } from './lib/paquete'
+import type { DrylogData } from './lib/drylog-types'
 import ExpedienteForm from './components/ExpedienteForm'
 import DocEditor, { emptyDocState, type DocEditorState } from './components/DocEditor'
 import DrylogSlot from './components/DrylogSlot'
+import PaqueteTab from './components/PaqueteTab'
 import CalcTab from './components/CalcTab'
 
-type View = 'datos' | DocId | 'gpp'
+type View = 'datos' | DocId | 'paquete' | 'gpp'
 
 const ALL_DOC_IDS: DocId[] = ['dtp', 'lop', 'affidavit', 'drylog', 'coc', 'invoice1', 'invoice2']
 
@@ -20,14 +23,16 @@ function initialDocStates(): Record<DocId, DocEditorState> {
 export default function App() {
   const [exp, setExp] = useState<Expediente>(emptyExpediente())
   const [docStates, setDocStates] = useState<Record<DocId, DocEditorState>>(initialDocStates)
+  const [drylogClosing, setDrylogClosing] = useState<DrylogData | null>(null)
   const [view, setView] = useState<View>('datos')
 
   const docs = activeDocs(exp)
   const setDocState = (id: DocId, s: DocEditorState) => setDocStates((prev) => ({ ...prev, [id]: s }))
+  const ready = packageReady(exp, docStates, drylogClosing)
 
   // Si el documento activo se desactiva (p.ej. Invoice 2 al cambiar a water), volvemos a Datos.
-  const visibleView: View =
-    view !== 'datos' && view !== 'gpp' && !docs.some((d) => d.id === view) ? 'datos' : view
+  const isFixed = view === 'datos' || view === 'gpp' || view === 'paquete'
+  const visibleView: View = isFixed || docs.some((d) => d.id === view) ? view : 'datos'
 
   return (
     <div className="app">
@@ -60,6 +65,7 @@ export default function App() {
           />
         ))}
         <span className="docnav-sep" />
+        <NavBtn label="Paquete" active={visibleView === 'paquete'} onClick={() => setView('paquete')} done={ready} />
         <NavBtn label="GPP" active={visibleView === 'gpp'} onClick={() => setView('gpp')} />
       </nav>
 
@@ -69,7 +75,16 @@ export default function App() {
         {docs.map((d) => {
           if (visibleView !== d.id) return null
           if (d.id === 'drylog') {
-            return <DrylogSlot key={d.id} def={d} exp={exp} state={docStates.drylog} onChange={(s) => setDocState('drylog', s)} />
+            return (
+              <DrylogSlot
+                key={d.id}
+                def={d}
+                exp={exp}
+                state={docStates.drylog}
+                onChange={(s) => setDocState('drylog', s)}
+                onClosingData={setDrylogClosing}
+              />
+            )
           }
           return (
             <DocEditor
@@ -82,6 +97,8 @@ export default function App() {
             />
           )
         })}
+
+        {visibleView === 'paquete' && <PaqueteTab exp={exp} docStates={docStates} drylogClosing={drylogClosing} />}
 
         {visibleView === 'gpp' && <CalcTab />}
       </main>

@@ -1321,6 +1321,68 @@ button {
   color: var(--lime-600);
 }
 
+/* ============ Checklist del paquete ============ */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-tint);
+}
+
+.check-item.ok {
+  border-color: var(--lime-600);
+  background: #fbfdf3;
+}
+
+.check-item .ci-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.check-item.ok .ci-icon {
+  background: var(--lime);
+  color: var(--navy-800);
+}
+
+.check-item.pending .ci-icon {
+  background: #eceef4;
+  color: var(--faint);
+}
+
+.check-item .ci-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+  min-width: 92px;
+}
+
+.check-item .ci-note {
+  font-size: 12.5px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check-item.pending .ci-note {
+  color: var(--danger);
+}
+
 .app-footer {
   text-align: center;
   font-size: 12px;

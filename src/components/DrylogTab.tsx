@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   emptyAffectedRow,
   emptyNoAffectedRow,
@@ -22,7 +22,7 @@ export interface DrylogSeed {
   firstLabel: string // "Initial" o "Closing"
 }
 
-export default function DrylogTab({ seed }: { seed?: DrylogSeed }) {
+export default function DrylogTab({ seed, onData }: { seed?: DrylogSeed; onData?: (d: DrylogData) => void }) {
   const [data, setData] = useState<DrylogData>(() => {
     const v = emptyVisit(seed?.firstLabel ?? 'Initial')
     if (seed) {
@@ -41,6 +41,12 @@ export default function DrylogTab({ seed }: { seed?: DrylogSeed }) {
   })
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null)
+
+  // Reporta los datos hacia arriba para que el paquete del expediente pueda
+  // generar este drylog aunque estés en otra pestaña.
+  useEffect(() => {
+    onData?.(data)
+  }, [data, onData])
 
   const set = (patch: Partial<DrylogData>) => setData((d) => ({ ...d, ...patch }))
   const setVisit = (i: number, patch: Partial<Visit>) =>

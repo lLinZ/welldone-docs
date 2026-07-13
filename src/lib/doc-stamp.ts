@@ -29,6 +29,18 @@ export function newEraseItem(page: number, x: number, top: number): StampItem {
   return { id: 0, page, x, top, kind: 'erase', text: '', size: 11, whiteOut: false, w: 120, h: 20 }
 }
 
+/** Estado de un documento subido y editado (compartido entre el editor y el paquete). */
+export interface DocEditorState {
+  fileName: string
+  bytes: Uint8Array | null
+  items: StampItem[]
+  flatten: boolean
+}
+
+export function emptyDocState(): DocEditorState {
+  return { fileName: '', bytes: null, items: [], flatten: false }
+}
+
 export async function stampPdf(bytes: Uint8Array, items: StampItem[]): Promise<Uint8Array> {
   const doc = await PDFDocument.load(bytes, { ignoreEncryption: true })
   const font = await doc.embedFont(StandardFonts.Helvetica)

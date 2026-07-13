@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DocDef, Expediente } from '../lib/expediente'
+import type { DrylogData } from '../lib/drylog-types'
 import DocEditor, { type DocEditorState } from './DocEditor'
 import DrylogTab from './DrylogTab'
 
@@ -8,10 +9,11 @@ interface Props {
   exp: Expediente
   state: DocEditorState
   onChange: (s: DocEditorState) => void
+  onClosingData?: (d: DrylogData) => void
 }
 
 /** Dry Log: se sube el inicial firmado (editable) y se genera el closing con nuevas lecturas. */
-export default function DrylogSlot({ def, exp, state, onChange }: Props) {
+export default function DrylogSlot({ def, exp, state, onChange, onClosingData }: Props) {
   const [mode, setMode] = useState<'inicial' | 'closing'>('inicial')
 
   return (
@@ -39,6 +41,7 @@ export default function DrylogSlot({ def, exp, state, onChange }: Props) {
       </div>
       <div style={{ display: mode === 'closing' ? undefined : 'none' }}>
         <DrylogTab
+          onData={onClosingData}
           seed={{
             insuredName: exp.clientName,
             insuredDirection: exp.address,
