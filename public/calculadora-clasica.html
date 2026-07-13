@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora GPP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101210;
+    --panel: #171a17;
+    --line: #2c322c;
+    --text: #d8ded6;
+    --dim: #7d857b;
+    --amber: #ffb000;
+    --amber-soft: rgba(255, 176, 0, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.18) 2px 4px),
+      radial-gradient(ellipse 90% 70% at 50% -10%, #1c211b 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .device {
+    width: 100%;
+    max-width: 440px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);
+    overflow: hidden;
+  }
+
+  header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  header h1 span { color: var(--amber); }
+
+  header small {
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 20px 22px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .field .box {
+    display: flex;
+    align-items: baseline;
+    background: #0c0e0c;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 12px;
+    transition: border-color .15s;
+  }
+
+  .field .box:focus-within { border-color: var(--amber); }
+
+  .field input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 30px;
+    font-weight: 500;
+    padding: 6px 0;
+    -moz-appearance: textfield;
+  }
+
+  .field input::-webkit-outer-spin-button,
+  .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .field .unit {
+    color: var(--dim);
+    font-size: 14px;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+
+  .readout {
+    margin: 0 22px 20px;
+    background: #0a0c0a;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px 20px 18px;
+    text-align: center;
+    position: relative;
+    background-image: linear-gradient(180deg, var(--amber-soft), transparent 55%);
+  }
+
+  .readout .tag {
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .readout .value {
+    font-size: 76px;
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--amber);
+    text-shadow: 0 0 22px rgba(255,176,0,.35);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .readout .unit-label {
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .extras {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 22px 20px;
+    gap: 14px;
+  }
+
+  .extra {
+    flex: 1;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+  }
+
+  .extra .k {
+    font-size: 9px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .extra .v {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    margin-left: 8px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--dim);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    align-self: center;
+  }
+
+  .copy-btn:hover { color: var(--amber); border-color: var(--amber); }
+  .copy-btn:active { transform: scale(.92); }
+
+  .copy-btn.done { color: #3fae5a; border-color: #3fae5a; }
+
+  .copy-btn svg { width: 14px; height: 14px; }
+
+  .readout .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  footer {
+    padding: 10px 22px 14px;
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #565e54;
+    border-top: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <header>
+    <h1>GPP<span>·</span>CALC</h1>
+    <small>Psicrometría</small>
+  </header>
+
+  <div class="inputs">
+    <div class="field">
+      <label for="temp">Temperatura</label>
+      <div class="box">
+        <input id="temp" type="number" inputmode="decimal" step="0.1" value="75" autofocus>
+        <span class="unit">°F</span>
+        <button class="copy-btn" type="button" data-copy="temp" title="Copiar temperatura"></button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="rh">Humedad Rel.</label>
+      <div class="box">
+        <input id="rh" type="number" inputmode="decimal" step="0.1" min="0" max="100" value="50">
+        <span class="unit">%</span>
+        <button class="copy-btn" type="button" data-copy="rh" title="Copiar humedad"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="readout">
+    <button class="copy-btn" type="button" data-copy="gpp" title="Copiar GPP"></button>
+    <div class="tag">Granos por libra</div>
+    <div class="value" id="gpp">--</div>
+    <div class="unit-label">GPP</div>
+  </div>
+
+  <div class="extras">
+    <div class="extra">
+      <div class="k">Punto de rocío</div>
+      <div class="v" id="dew">--</div>
+    </div>
+    <div class="extra">
+      <div class="k">Presión de vapor</div>
+      <div class="v" id="vp">--</div>
+    </div>
+  </div>
+
+  <footer>P. atmosférica estándar 29.921 inHg · nivel del mar</footer>
+</div>
+
+<script>
+  const tempEl = document.getElementById('temp');
+  const rhEl   = document.getElementById('rh');
+  const gppEl  = document.getElementById('gpp');
+  const dewEl  = document.getElementById('dew');
+  const vpEl   = document.getElementById('vp');
+
+  const P_ATM = 29.921; // inHg, presión estándar a nivel del mar
+
+  function calc() {
+    const f  = parseFloat(tempEl.value);
+    const rh = parseFloat(rhEl.value);
+
+    if (isNaN(f) || isNaN(rh) || rh < 0 || rh > 100) {
+      gppEl.textContent = '--';
+      dewEl.textContent = '--';
+      vpEl.textContent  = '--';
+      return;
+    }
+
+    const c = (f - 32) * 5 / 9;
+
+    // Presión de vapor de saturación (Magnus) en hPa → inHg
+    const esHpa = 6.112 * Math.exp((17.67 * c) / (c + 243.5));
+    const es = esHpa / 33.8639;
+
+    // Presión de vapor real
+    const pv = (rh / 100) * es;
+
+    // Razón de humedad → granos por libra
+    const w = 0.62198 * pv / (P_ATM - pv);
+    const gpp = w * 7000;
+
+    gppEl.textContent = Math.round(gpp);
+    vpEl.textContent = pv.toFixed(3) + ' inHg';
+
+    // Punto de rocío (inversa de Magnus)
+    if (rh > 0) {
+      const gamma = Math.log(rh / 100) + (17.67 * c) / (243.5 + c);
+      const dpC = 243.5 * gamma / (17.67 - gamma);
+      dewEl.textContent = (dpC * 9 / 5 + 32).toFixed(1) + ' °F';
+    } else {
+      dewEl.textContent = '--';
+    }
+  }
+
+  tempEl.addEventListener('input', calc);
+  rhEl.addEventListener('input', calc);
+  calc();
+
+  const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  const ICON_OK   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  function getValor(que) {
+    if (que === 'temp') return tempEl.value;
+    if (que === 'rh')   return rhEl.value;
+    if (que === 'gpp')  return gppEl.textContent;
+  }
+
+  function escribirPortapapeles(texto) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(texto);
+    }
+    // Respaldo para cuando el portapapeles no está disponible (archivo local en algunos navegadores)
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok ? resolve() : reject();
+    });
+  }
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.innerHTML = ICON_COPY;
+    let timer;
+
+    btn.addEventListener('click', () => {
+      const texto = getValor(btn.dataset.copy);
+      if (!texto || texto === '--') return;
+
+      escribirPortapapeles(texto).then(() => {
+        btn.innerHTML = ICON_OK;
+        btn.classList.add('done');
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          btn.innerHTML = ICON_COPY;
+          btn.classList.remove('done');
+        }, 1200);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
