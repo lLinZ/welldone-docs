@@ -647,12 +647,32 @@ button {
   border-radius: 11px;
   padding: 9px 10px;
   background: var(--bg-tint);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+.item-row.selected {
+  border-color: var(--lime-600);
+  background: #fbfdf3;
+  box-shadow: 0 0 0 2px var(--lime-soft);
+  cursor: default;
 }
 
 .item-row .top {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.item-row .row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .item-row .pg {
@@ -811,8 +831,11 @@ button {
 
 .ov.text .bg {
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(17, 19, 24, 0.12);
   padding: 0 1px;
+}
+
+.ov.text.selected .bg {
+  box-shadow: 0 0 0 1px var(--lime-600);
 }
 
 .ov.erase {
@@ -824,7 +847,8 @@ button {
 
 .ov.selected {
   outline: 2px solid var(--lime-600);
-  outline-offset: 1px;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(194, 231, 12, 0.28);
 }
 
 .ov .handle {
@@ -844,6 +868,135 @@ button {
   text-align: center;
   font-size: 12px;
   color: var(--muted);
+}
+
+/* Barra flotante del elemento seleccionado — siempre a mano al hacer scroll */
+.sel-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 28px);
+  flex-wrap: wrap;
+}
+
+.sel-bar .sel-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--lime);
+  white-space: nowrap;
+}
+
+.sel-bar input[type='text'] {
+  min-width: 150px;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 11px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+}
+
+.sel-bar .num {
+  width: 56px;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+}
+
+.sel-bar .lbl {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sel-bar .mini-check {
+  color: #fff;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.sel-bar .mini-check input {
+  accent-color: var(--lime);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  padding: 2px;
+}
+
+.stepper button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 7px;
+}
+
+.stepper button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.stepper span {
+  min-width: 30px;
+  text-align: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sel-bar .bar-btn {
+  border: none;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sel-bar .bar-btn.del {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffd7d2;
+}
+
+.sel-bar .bar-btn.del:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.sel-bar .bar-btn.done {
+  background: var(--lime);
+  color: var(--navy-800);
 }
 
 /* ============ Tablas del drylog ============ */

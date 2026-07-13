@@ -177,6 +177,11 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
 
   const removeItem = (id: number) => setItems(items.filter((it) => it.id !== id))
 
+  const selectItem = (it: StampItem) => {
+    setSelected(it.id)
+    setPageIdx(it.page)
+  }
+
   // ---- Arrastrar / redimensionar ----
   const startDrag = (id: number, e: React.PointerEvent) => {
     e.preventDefault()
@@ -279,6 +284,7 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
   }
 
   const itemsOnPage = items.filter((i) => i.page === pageIdx)
+  const selItem = items.find((i) => i.id === selected) ?? null
 
   return (
     <div className="editor">
@@ -344,79 +350,31 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
             <div className="item-list">
               {items.map((it) => (
                 <div
-                  className="item-row"
+                  className={`item-row ${selected === it.id ? 'selected' : ''}`}
                   key={it.id}
-                  onPointerEnter={() => setSelected(it.id)}
+                  onClick={() => selectItem(it)}
                 >
                   <div className="top">
                     <span className="pg">p.{it.page + 1}</span>
                     <span className={`item-tag ${it.kind}`}>{it.kind === 'erase' ? 'borrar' : 'texto'}</span>
-                    {it.kind === 'text' ? (
-                      <input
-                        type="text"
-                        value={it.text}
-                        autoFocus={it.text === '' && it.id === selected}
-                        placeholder="escribe…"
-                        onChange={(e) => updateItem(it.id, { text: e.target.value })}
-                      />
-                    ) : (
-                      <span style={{ flex: 1, fontSize: 12, color: 'var(--muted)' }}>Cuadro blanco</span>
-                    )}
-                    <button className="icon-btn" title="Quitar" onClick={() => removeItem(it.id)}>
+                    <span className="row-text">{it.kind === 'erase' ? 'Cuadro blanco' : it.text || '(vacío)'}</span>
+                    <button
+                      className="icon-btn"
+                      title="Quitar"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeItem(it.id)
+                        if (selected === it.id) setSelected(null)
+                      }}
+                    >
                       <TrashIcon />
                     </button>
                   </div>
-                  <div className="bottom">
-                    {it.kind === 'text' ? (
-                      <>
-                        <label>
-                          Tam.
-                          <input
-                            className="num"
-                            type="number"
-                            min={6}
-                            max={40}
-                            value={it.size}
-                            style={{ marginLeft: 6 }}
-                            onChange={(e) => updateItem(it.id, { size: parseFloat(e.target.value) || 11 })}
-                          />
-                        </label>
-                        <label className="mini-check">
-                          <input
-                            type="checkbox"
-                            checked={it.whiteOut}
-                            onChange={(e) => updateItem(it.id, { whiteOut: e.target.checked })}
-                          />
-                          tapar debajo
-                        </label>
-                      </>
-                    ) : (
-                      <>
-                        <label>
-                          An.
-                          <input
-                            className="num"
-                            type="number"
-                            value={it.w}
-                            style={{ marginLeft: 6 }}
-                            onChange={(e) => updateItem(it.id, { w: parseFloat(e.target.value) || 10 })}
-                          />
-                        </label>
-                        <label>
-                          Al.
-                          <input
-                            className="num"
-                            type="number"
-                            value={it.h}
-                            style={{ marginLeft: 6 }}
-                            onChange={(e) => updateItem(it.id, { h: parseFloat(e.target.value) || 10 })}
-                          />
-                        </label>
-                      </>
-                    )}
-                  </div>
                 </div>
               ))}
+            </div>
+            <div className="hint" style={{ marginTop: 8 }}>
+              Toca uno para seleccionarlo; se edita en la barra de abajo.
             </div>
           </div>
         )}
@@ -495,9 +453,78 @@ export default function DocEditor({ def, exp, state, onChange, autoPlace }: Prop
         <div className="stage-hint">
           {armed
             ? 'Haz clic en el documento para colocar.'
-            : 'Toca un elemento para seleccionarlo y arrastrarlo. Así se verá en el PDF final.'}
+            : 'Toca un elemento para seleccionarlo, arrastrarlo o editarlo en la barra de abajo.'}
+          <br />
+          Los contornos y recuadros son solo guías del editor — no salen en el PDF.
         </div>
       </div>
+
+      {/* ---------- Barra flotante del elemento seleccionado ---------- */}
+      {selItem && (
+        <div className="sel-bar">
+          <span className="sel-tag">
+            {selItem.kind === 'erase' ? 'Cuadro blanco' : 'Texto'} · p.{selItem.page + 1}
+          </span>
+          {selItem.kind === 'text' ? (
+            <>
+              <input
+                key={selItem.id}
+                type="text"
+                value={selItem.text}
+                autoFocus={selItem.text === ''}
+                placeholder="Escribe el texto…"
+                onChange={(e) => updateItem(selItem.id, { text: e.target.value })}
+              />
+              <div className="stepper" title="Tamaño del texto">
+                <button onClick={() => updateItem(selItem.id, { size: Math.max(6, selItem.size - 1) })}>−</button>
+                <span>{selItem.size}</span>
+                <button onClick={() => updateItem(selItem.id, { size: Math.min(48, selItem.size + 1) })}>+</button>
+              </div>
+              <label className="mini-check">
+                <input
+                  type="checkbox"
+                  checked={selItem.whiteOut}
+                  onChange={(e) => updateItem(selItem.id, { whiteOut: e.target.checked })}
+                />
+                tapar
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="lbl">
+                An
+                <input
+                  className="num"
+                  type="number"
+                  value={selItem.w}
+                  onChange={(e) => updateItem(selItem.id, { w: parseFloat(e.target.value) || 10 })}
+                />
+              </label>
+              <label className="lbl">
+                Al
+                <input
+                  className="num"
+                  type="number"
+                  value={selItem.h}
+                  onChange={(e) => updateItem(selItem.id, { h: parseFloat(e.target.value) || 10 })}
+                />
+              </label>
+            </>
+          )}
+          <button
+            className="bar-btn del"
+            onClick={() => {
+              removeItem(selItem.id)
+              setSelected(null)
+            }}
+          >
+            Eliminar
+          </button>
+          <button className="bar-btn done" onClick={() => setSelected(null)}>
+            Listo
+          </button>
+        </div>
+      )}
     </div>
   )
 }
